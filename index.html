@@ -573,7 +573,9 @@ function renderPractice(){
 
   const showEnglish = dir==='A';
   const prompt = showEnglish ? catOfWord.promptA : catOfWord.promptB;
-  const expected = showEnglish ? w.he : [w.en];
+  const expected = showEnglish
+    ? w.he
+    : (catOfWord.isNumbers ? [w.en, w.he[0]] : [w.en]);
 
   app.innerHTML = `
     <div class="practice-header">
