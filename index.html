@@ -672,29 +672,32 @@ function renderPractice(){
     };
     document.getElementById('card').appendChild(a);
   }
-  function startRecognition(lang, isRetry){
+  const LANG_CHAIN = showEnglish ? ['he-IL','iw-IL','he'] : ['en-US'];
+  function startRecognition(langIdx){
+    const lang = LANG_CHAIN[langIdx];
+    const isFirst = langIdx===0;
+    const isLast = langIdx>=LANG_CHAIN.length-1;
     const rec = new SR();
     rec.lang = lang;
     rec.maxAlternatives = 3;
     rec.interimResults = false;
     micBtn.classList.add('listening');
-    caption.textContent = 'מקשיבה...' + (isRetry ? ' (ניסיון נוסף)' : '');
-    if(!isRetry){ feedback.textContent=''; feedback.className='feedback'; }
+    caption.textContent = 'מקשיבה...' + (isFirst ? '' : ' (ניסיון '+(langIdx+1)+')');
+    if(isFirst){ feedback.textContent=''; feedback.className='feedback'; }
     let done=false;
-    const canAutoRetry = !isRetry && showEnglish; // only Hebrew-answer direction: he-IL is sometimes unsupported, iw-IL is the legacy code for Hebrew
-    function markHeBrokenIfNeeded(){
-      if(isRetry && showEnglish){ S.heDictationBroken = true; saveState(); }
-    }
-    const watchdog = setTimeout(()=>{
-      if(done) return; done=true;
-      try{ rec.stop(); }catch(e){}
-      if(canAutoRetry){ startRecognition('iw-IL', true); return; }
-      markHeBrokenIfNeeded();
+    function giveUp(){
+      if(showEnglish){ S.heDictationBroken = true; saveState(); }
       micBtn.classList.remove('listening');
       caption.textContent = 'לא הצלחתי לשמוע, נסי שוב 🙂 [timeout]';
       session.micFailCount += 2;
       if(session.micFailCount>=2) offerSelfCheckFallback();
-    }, canAutoRetry ? 5000 : 8000);
+    }
+    const watchdog = setTimeout(()=>{
+      if(done) return; done=true;
+      try{ rec.stop(); }catch(e){}
+      if(!isLast){ startRecognition(langIdx+1); return; }
+      giveUp();
+    }, isLast ? 8000 : 4000);
     rec.onresult = (ev)=>{
       if(done) return; done=true; clearTimeout(watchdog);
       session.micFailCount = 0;
@@ -707,8 +710,11 @@ function renderPractice(){
     rec.onerror = (ev)=>{
       if(done) return; done=true; clearTimeout(watchdog);
       const code = ev && ev.error;
-      if(canAutoRetry && (code==='language-not-supported' || code==='no-speech')){ startRecognition('iw-IL', true); return; }
-      markHeBrokenIfNeeded();
+      if(!isLast && (code==='language-not-supported' || code==='no-speech')){ startRecognition(langIdx+1); return; }
+      if(!isLast){
+        // a non-language-specific error (permission/network/etc) — no point cycling languages, fail now
+      }
+      if(code==='language-not-supported' || code==='no-speech'){ giveUp(); return; }
       micBtn.classList.remove('listening');
       caption.textContent = (ERR_MSG[code] || 'שגיאה בזיהוי דיבור') + '  [' + (code||'?') + ']';
       session.micFailCount += 1;
@@ -717,18 +723,16 @@ function renderPractice(){
     rec.onend = ()=>{
       clearTimeout(watchdog);
       micBtn.classList.remove('listening');
-      if(caption.textContent==='מקשיבה...' || caption.textContent==='מקשיבה... (ניסיון נוסף)') caption.textContent='לחצי ודברי';
+      if(/^מקשיבה/.test(caption.textContent)) caption.textContent='לחצי ודברי';
     };
     try{ rec.start(); }catch(e){
-      if(canAutoRetry){ startRecognition('iw-IL', true); return; }
-      markHeBrokenIfNeeded();
-      micBtn.classList.remove('listening');
-      caption.textContent='נסי שוב בעוד רגע'; offerSelfCheckFallback();
+      if(!isLast){ startRecognition(langIdx+1); return; }
+      giveUp();
     }
   }
   micBtn.onclick = ()=>{
     if(session.locked) return;
-    startRecognition(showEnglish ? 'he-IL' : 'en-US', false);
+    startRecognition(0);
   };
 
   function showHints(){
