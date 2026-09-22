@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>מילים לאיילה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #FFF8F0;
+    --bg-card: #FFFFFF;
+    --ink: #3A2E4D;
+    --ink-soft: #7A6E8F;
+    --border: #F0E4D8;
+    --accent: #FF6B6B;
+    --accent-ink: #FFFFFF;
+    --good: #3DB88A;
+    --good-bg: #E4F8EF;
+    --bad: #FF6B6B;
+    --bad-bg: #FFEEEE;
+    --shadow: 0 8px 24px rgba(120, 90, 60, 0.10);
+    --shadow-lg: 0 16px 40px rgba(120, 90, 60, 0.16);
+    color-scheme: light;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Rubik', system-ui, sans-serif;
+    padding-inline: 16px;
+    padding-block: max(16px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-bottom));
+    min-height: 100%;
+  }
+  .en{ font-family: 'Fredoka', 'Rubik', sans-serif; direction: ltr; }
+  h1,h2,h3{ text-wrap: balance; margin: 0; }
+  button{ font-family: inherit; cursor: pointer; }
+  .wrap{ max-width: 640px; margin: 0 auto; }
+
+  /* ---------- header ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    gap: 10px; padding-block: 10px 18px;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; }
+  .brand-title{ font-size: 22px; font-weight: 800; }
+  .brand-emoji{ font-size: 28px; }
+  .icon-btn{
+    width: 42px; height:42px; border-radius: 50%;
+    border: none; background: var(--bg-card); box-shadow: var(--shadow);
+    font-size: 19px; display:flex; align-items:center; justify-content:center;
+    color: var(--ink-soft);
+  }
+  .streak-pill{
+    display:flex; align-items:center; gap:6px;
+    background: var(--bg-card); border-radius: 999px; padding: 7px 13px;
+    box-shadow: var(--shadow); font-weight:700; font-size: 14px; color: var(--ink);
+  }
+  .exam-banner{
+    background: linear-gradient(135deg, #FFE29A, #FFB199);
+    border-radius: 18px; padding: 12px 16px; margin-bottom: 16px;
+    font-weight: 700; font-size: 14.5px; color: #5A3A2A;
+    display:flex; align-items:center; justify-content:space-between; gap: 10px;
+    box-shadow: var(--shadow);
+  }
+  .exam-banner button{ background:none;border:none;color:#5A3A2A; text-decoration:underline; font-size:13px; font-weight:600; padding:0;}
+
+  /* ---------- category grid ---------- */
+  .section-title{ font-size: 15px; font-weight: 700; color: var(--ink-soft); margin: 18px 2px 10px; }
+  .cat-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .cat-card{
+    background: var(--bg-card); border-radius: 22px; padding: 16px 14px;
+    box-shadow: var(--shadow); border: none; text-align: start;
+    display:flex; flex-direction:column; gap:10px; position:relative; overflow:hidden;
+    transition: transform .15s ease;
+  }
+  .cat-card:active{ transform: scale(0.97); }
+  .cat-card .cat-icon{ font-size: 34px; }
+  .cat-card .cat-name{ font-size: 16.5px; font-weight: 800; color: var(--ink); }
+  .cat-card .cat-progress-text{ font-size: 12.5px; color: var(--ink-soft); font-weight:600; }
+  .bar{ height: 8px; border-radius: 999px; background: var(--border); overflow:hidden; }
+  .bar > i{ display:block; height:100%; border-radius:999px; }
+  .cat-card .badge-mastered{
+    position:absolute; top:12px; inset-inline-end:12px; font-size:11px; font-weight:800;
+    background: var(--good-bg); color: var(--good); padding: 3px 9px; border-radius: 999px;
+  }
+
+  .test-card{
+    margin-top: 14px; width:100%; border:none; border-radius: 22px; padding: 18px 20px;
+    background: linear-gradient(135deg, #A78BFA, #7C6CF0); color:#fff; box-shadow: var(--shadow-lg);
+    display:flex; align-items:center; gap:14px; text-align: start;
+  }
+  .test-card .t-emoji{ font-size: 32px; }
+  .test-card .t-title{ font-size: 17px; font-weight:800; }
+  .test-card .t-sub{ font-size: 12.5px; opacity:.9; font-weight:500; }
+
+  /* ---------- practice screen ---------- */
+  .practice-header{ display:flex; align-items:center; gap:10px; margin-bottom: 14px; }
+  .back-btn{
+    border:none; background: var(--bg-card); box-shadow: var(--shadow);
+    width:40px;height:40px;border-radius:50%; font-size:18px; color:var(--ink-soft);
+    display:flex;align-items:center;justify-content:center; flex-shrink:0;
+  }
+  .practice-title{ font-weight:800; font-size:17px; flex:1; }
+  .mode-tabs{ display:flex; gap:8px; margin-bottom: 16px; }
+  .mode-tab{
+    flex:1; border:none; padding: 10px 4px; border-radius: 14px; font-weight:700; font-size:12.5px;
+    background: var(--bg-card); color: var(--ink-soft); box-shadow: var(--shadow);
+  }
+  .mode-tab.active{ background: var(--accent); color: var(--accent-ink); }
+
+  .card{
+    background: var(--bg-card); border-radius: 28px; padding: 30px 22px 26px;
+    box-shadow: var(--shadow-lg); text-align:center; position:relative;
+    border: 3px solid transparent;
+  }
+  .card.good-flash{ border-color: var(--good); animation: pop .4s ease; }
+  .card.bad-flash{ border-color: var(--bad); animation: shake .4s ease; }
+  @keyframes pop{ 0%{transform:scale(1)} 40%{transform:scale(1.03)} 100%{transform:scale(1)} }
+  @keyframes shake{ 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+  .card-emoji{ font-size: 74px; line-height:1; margin-bottom: 8px; }
+  .card-number{ font-size: 64px; font-weight: 800; font-family:'Fredoka'; color: var(--accent); margin-bottom: 8px; }
+  .card-word{ font-size: 34px; font-weight: 700; margin-bottom: 4px; }
+  .card-prompt{ font-size: 14.5px; color: var(--ink-soft); font-weight:600; margin-bottom: 18px; }
+  .sound-badge{
+    display:inline-block; font-family:'Fredoka'; font-size:46px; font-weight:700; color:#fff;
+    background: linear-gradient(135deg, #4ECDC4, #2E8B84); padding: 14px 32px; border-radius: 24px;
+    margin-bottom: 14px; letter-spacing: 1px; direction: ltr;
+  }
+  .sound-guide{ font-size: 19px; font-weight:700; margin-bottom:4px; }
+  .sound-hint{ font-size: 13px; color: var(--ink-soft); font-weight:600; margin-bottom: 6px; }
+
+  .mic-btn{
+    width: 92px; height:92px; border-radius:50%; border:none; margin: 6px auto 10px;
+    background: linear-gradient(135deg, #FF8A65, #FF6B6B); color:#fff; font-size: 36px;
+    box-shadow: 0 10px 26px rgba(255,107,107,.4); display:flex; align-items:center; justify-content:center;
+  }
+  .mic-btn.listening{ animation: mic-pulse 1s infinite; }
+  @keyframes mic-pulse{ 0%{box-shadow:0 0 0 0 rgba(255,107,107,.45)} 70%{box-shadow:0 0 0 18px rgba(255,107,107,0)} 100%{box-shadow:0 0 0 0 rgba(255,107,107,0)} }
+  .mic-caption{ font-size: 13px; color: var(--ink-soft); font-weight:600; min-height: 18px; }
+
+  .feedback{ min-height: 26px; font-weight:800; font-size: 16px; margin-top: 6px; }
+  .feedback.good{ color: var(--good); }
+  .feedback.bad{ color: var(--bad); }
+
+  .hint-row{ display:flex; gap:8px; justify-content:center; margin-top: 14px; flex-wrap:wrap; }
+  .hint-btn{
+    border:none; background: var(--border); color: var(--ink); font-weight:700; font-size:13px;
+    padding: 9px 15px; border-radius: 999px;
+  }
+  .hint-btn.self{ background: var(--bg); border: 2px dashed var(--ink-soft); color: var(--ink-soft); }
+
+  .fallback-box{
+    margin-top: 16px; padding: 14px; border-radius: 16px; background: #FFF4E5; color:#8A5A1A;
+    font-size: 13px; font-weight: 600; text-align:center;
+  }
+  .self-check-row{ display:flex; gap:10px; margin-top:12px; }
+  .self-check-row button{
+    flex:1; border:none; border-radius: 14px; padding: 13px; font-weight:800; font-size:14px;
+  }
+  .sc-yes{ background: var(--good-bg); color: var(--good); }
+  .sc-no{ background: var(--bad-bg); color: var(--bad); }
+
+  .progress-dots{ display:flex; gap:5px; justify-content:center; margin: 16px 0 4px; }
+  .progress-dots i{ width:7px;height:7px;border-radius:50%; background: var(--border); display:block; }
+  .progress-dots i.done{ background: var(--accent); }
+
+  /* ---------- result screen ---------- */
+  .result-card{
+    background: var(--bg-card); border-radius: 28px; padding: 34px 24px; text-align:center;
+    box-shadow: var(--shadow-lg);
+  }
+  .result-emoji{ font-size: 64px; margin-bottom: 10px; }
+  .result-score{ font-size: 40px; font-weight:800; font-family:'Fredoka'; color: var(--accent); margin-bottom:6px;}
+  .result-sub{ color: var(--ink-soft); font-weight:600; font-size: 14px; margin-bottom: 20px; }
+  .primary-btn{
+    border:none; background: var(--accent); color:#fff; font-weight:800; font-size:15px;
+    padding: 14px 22px; border-radius: 16px; width:100%; box-shadow: var(--shadow);
+  }
+  .secondary-btn{
+    border:none; background: var(--bg-card); color: var(--ink); font-weight:700; font-size:14px;
+    padding: 12px 20px; border-radius: 16px; width:100%; margin-top:10px; box-shadow: var(--shadow);
+  }
+  .missed-list{ text-align:start; margin: 16px 0; display:flex; flex-direction:column; gap:8px; }
+  .missed-item{ display:flex; justify-content:space-between; background: var(--bg); border-radius:12px; padding:9px 13px; font-weight:600; font-size:13.5px; }
+
+  /* ---------- overlay (settings) ---------- */
+  .overlay{ position:fixed; inset:0; background: rgba(40,25,20,.4); display:flex; align-items:flex-end; justify-content:center; z-index:50; }
+  .sheet{
+    background: var(--bg-card); width:100%; max-width: 640px; border-radius: 26px 26px 0 0;
+    padding: 22px 20px max(22px, env(safe-area-inset-bottom)); box-shadow: var(--shadow-lg);
+  }
+  .sheet h3{ font-size:18px; font-weight:800; margin-bottom:14px; }
+  .field-row{ display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+  .field-row label{ font-size:13px; font-weight:700; color: var(--ink-soft); }
+  .field-row input{
+    border: 2px solid var(--border); border-radius: 12px; padding: 11px 13px; font-size:15px;
+    font-family:inherit; background: var(--bg);
+  }
+  .danger-btn{ background: var(--bad-bg); color: var(--bad); border:none; font-weight:700; font-size:14px; padding:12px; border-radius:14px; width:100%; }
+  .close-sheet{ background: none; border:none; color:var(--ink-soft); font-weight:700; font-size:14px; width:100%; padding-top:6px; }
+
+  .confetti{ position:fixed; top:0; left:0; pointer-events:none; font-size: 22px; z-index: 60; }
+  [hidden]{ display:none !important; }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+/* ============ DATA ============ */
+const CATS = [
+  { id:'verbs', name:'פעלים', icon:'🏃', color:'#FF6B6B',
+    promptA:'מה זה אומר בעברית?', promptB:'איך אומרים את זה באנגלית?',
+    words:[
+      {en:'run', he:['לרוץ','רץ','רצה'], emoji:'🏃'},
+      {en:'play', he:['לשחק','משחק','משחקת'], emoji:'🤾'},
+      {en:'go', he:['ללכת','הולך','הולכת'], emoji:'🚶'},
+      {en:'sit', he:['לשבת','יושב','יושבת'], emoji:'🪑'},
+      {en:'look', he:['להסתכל','מסתכל','מביט','מסתכלת'], emoji:'👀'},
+      {en:'jump', he:['לקפוץ','קופץ','קופצת'], emoji:'🤸'},
+      {en:'see', he:['לראות','רואה'], emoji:'👁️'},
+      {en:'sing', he:['לשיר','שר','שרה'], emoji:'🎤'},
+      {en:'read', he:['לקרוא','קורא','קוראת'], emoji:'📖'},
+      {en:'stand up', he:['לקום','קם','עומד','קמה'], emoji:'🧍'},
+      {en:'eat', he:['לאכול','אוכל','אוכלת'], emoji:'🍎'},
+      {en:'talk', he:['לדבר','מדבר','מדברת'], emoji:'💬'},
+      {en:'write', he:['לכתוב','כותב','כותבת'], emoji:'✏️'},
+      {en:'say', he:['לומר','אומר','אומרת'], emoji:'🗣️'},
+      {en:'listen', he:['להקשיב','מקשיב','שומע','מקשיבה'], emoji:'👂'},
+    ]},
+  { id:'family', name:'משפחה ואנשים', icon:'👨‍👩‍👧', color:'#4ECDC4',
+    promptA:'מה זה אומר בעברית?', promptB:'איך אומרים את זה באנגלית?',
+    words:[
+      {en:'man', he:['איש','גבר'], emoji:'👨'},
+      {en:'woman', he:['אישה'], emoji:'👩'},
+      {en:'boy', he:['ילד'], emoji:'👦'},
+      {en:'girl', he:['ילדה'], emoji:'👧'},
+      {en:'baby', he:['תינוק','תינוקת'], emoji:'👶'},
+      {en:'mom', he:['אמא'], emoji:'🤱'},
+      {en:'dad', he:['אבא'], emoji:'👨‍🦱'},
+      {en:'sister', he:['אחות'], emoji:'👧'},
+      {en:'brother', he:['אח'], emoji:'👦'},
+      {en:'friend', he:['חבר','חברה'], emoji:'🧑‍🤝‍🧑'},
+      {en:'grandma', he:['סבתא'], emoji:'👵'},
+      {en:'grandpa', he:['סבא'], emoji:'👴'},
+      {en:'pupil', he:['תלמיד','תלמידה'], emoji:'🧑‍🎓'},
+      {en:'teacher', he:['מורה'], emoji:'🧑‍🏫'},
+      {en:'children', he:['ילדים'], emoji:'🧒'},
+    ]},
+  { id:'colors', name:'צבעים', icon:'🎨', color:'#FFB84C',
+    promptA:'איזה צבע זה?', promptB:'איך אומרים את הצבע הזה באנגלית?',
+    words:[
+      {en:'red', he:['אדום'], emoji:'🔴'},
+      {en:'blue', he:['כחול'], emoji:'🔵'},
+      {en:'green', he:['ירוק'], emoji:'🟢'},
+      {en:'yellow', he:['צהוב'], emoji:'🟡'},
+      {en:'black', he:['שחור'], emoji:'⚫'},
+      {en:'orange', he:['כתום'], emoji:'🟠'},
+      {en:'purple', he:['סגול'], emoji:'🟣'},
+      {en:'pink', he:['ורוד'], emoji:'🌸'},
+      {en:'white', he:['לבן'], emoji:'⚪'},
+      {en:'brown', he:['חום'], emoji:'🟤'},
+    ]},
+  { id:'adjectives', name:'תארים', icon:'✨', color:'#A78BFA',
+    promptA:'מה זה אומר בעברית?', promptB:'איך אומרים את זה באנגלית?',
+    words:[
+      {en:'short', he:['קצר','נמוך','קצרה'], emoji:'🤏'},
+      {en:'fat', he:['שמן','שמנה'], emoji:'🐷'},
+      {en:'sad', he:['עצוב','עצובה'], emoji:'😢'},
+      {en:'cold', he:['קר','קרה'], emoji:'🥶'},
+      {en:'small', he:['קטן','קטנה'], emoji:'🐭'},
+      {en:'hot', he:['חם','חמה'], emoji:'🥵'},
+      {en:'happy', he:['שמח','שמחה'], emoji:'😄'},
+      {en:'good', he:['טוב','טובה'], emoji:'👍'},
+      {en:'new', he:['חדש','חדשה'], emoji:'✨'},
+      {en:'thin', he:['רזה'], emoji:'🥒'},
+      {en:'long', he:['ארוך','ארוכה'], emoji:'🐍'},
+      {en:'big', he:['גדול','גדולה'], emoji:'🐘'},
+      {en:'tall', he:['גבוה','גבוהה'], emoji:'🦒'},
+      {en:'old', he:['ישן','זקן','ישנה'], emoji:'🕰️'},
+      {en:'bad', he:['רע','רעה'], emoji:'👎'},
+    ]},
+  { id:'numbers', name:'מספרים', icon:'🔢', color:'#3DB88A',
+    promptA:'כמה זה?', promptB:'איך אומרים את המספר הזה באנגלית?', isNumbers:true,
+    words:[
+      {en:'one', he:['1','אחד','אחת']},
+      {en:'two', he:['2','שניים','שתיים']},
+      {en:'three', he:['3','שלושה','שלוש']},
+      {en:'four', he:['4','ארבעה','ארבע']},
+      {en:'five', he:['5','חמישה','חמש']},
+      {en:'six', he:['6','שישה','שש']},
+      {en:'seven', he:['7','שבעה','שבע']},
+      {en:'eight', he:['8','שמונה']},
+      {en:'nine', he:['9','תשעה','תשע']},
+      {en:'ten', he:['10','עשרה','עשר']},
+      {en:'eleven', he:['11','אחד עשר','אחת עשרה']},
+      {en:'twelve', he:['12','שנים עשר','שתים עשרה']},
+      {en:'thirteen', he:['13','שלושה עשר','שלוש עשרה']},
+      {en:'fourteen', he:['14','ארבעה עשר','ארבע עשרה']},
+      {en:'fifteen', he:['15','חמישה עשר','חמש עשרה']},
+      {en:'sixteen', he:['16','שישה עשר','שש עשרה']},
+      {en:'seventeen', he:['17','שבעה עשר','שבע עשרה']},
+      {en:'eighteen', he:['18','שמונה עשר','שמונה עשרה']},
+      {en:'nineteen', he:['19','תשעה עשר','תשע עשרה']},
+      {en:'twenty', he:['20','עשרים']},
+      {en:'thirty', he:['30','שלושים']},
+      {en:'forty', he:['40','ארבעים']},
+      {en:'fifty', he:['50','חמישים']},
+      {en:'sixty', he:['60','שישים']},
+      {en:'seventy', he:['70','שבעים']},
+      {en:'eighty', he:['80','שמונים']},
+      {en:'ninety', he:['90','תשעים']},
+      {en:'a hundred', he:['100','מאה']},
+    ]},
+  { id:'sounds', name:'צלילים באנגלית', icon:'🔊', color:'#3AA9A0', isSounds:true,
+    promptA:'תגידי את הצליל!', promptB:'תגידי את הצליל!',
+    words:[
+      {en:'sh', he:['שש'], hint:'כמו לבקש שקט: ששש'},
+      {en:'ch', he:["צ'",'טש'], hint:"כמו במילה צ'יפס"},
+      {en:'th', he:["ת'",'ד'], hint:'הלשון קצת בין השיניים'},
+      {en:'ph', he:['פ'], hint:'נשמע כמו f'},
+      {en:'wh', he:['וו','ו'], hint:'נשמע כמו w'},
+      {en:'ck', he:['ק'], hint:'צליל ק בסוף מילה'},
+      {en:'ng', he:['נג'], hint:'כמו בסוף המילה song'},
+      {en:'qu', he:['קו'], hint:'קְוו, לא רק כּ'},
+      {en:'ba', he:['בה']},
+      {en:'ga', he:['גה']},
+      {en:'da', he:['דה']},
+      {en:'ka', he:['קה']},
+      {en:'la', he:['לה']},
+      {en:'ma', he:['מה']},
+      {en:'na', he:['נה']},
+      {en:'pa', he:['פה']},
+      {en:'sa', he:['סה']},
+      {en:'ta', he:['טה']},
+      {en:'ha', he:['הה']},
+      {en:'fa', he:['פה'], hint:'כמו f באנגלית, לא p'},
+      {en:'ra', he:['רה']},
+      {en:'va', he:['וה'], hint:'כמו v באנגלית, לא ב רגילה'},
+      {en:'bi', he:['בי']},
+      {en:'mo', he:['מו']},
+    ]},
+];
+CATS.forEach(cat=> cat.words.forEach((w,i)=>{ w.id = cat.id+'_'+i; w.cat = cat.id; }));
+const WORD_BY_ID = {}; CATS.forEach(c=>c.words.forEach(w=>WORD_BY_ID[w.id]=w));
+
+const PRAISE = ['מעולה! 🎉','כל הכבוד! ⭐','וואו, נכון! 🥳','יופי! 💪','את אלופה! 🏆','מדהים! ✨','בדיוק! 🙌'];
+const TRY_AGAIN = ['כמעט! נסי שוב 💛','לא נורא, ננסה שוב 🙂','עוד ניסיון! את יכולה 💪','קרוב! בואי ננסה עוד פעם'];
+
+/* ============ STATE ============ */
+const STORE_KEY = 'ayalaEnglish.v1';
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return { words:{}, examDate:'', streak:0, lastDay:'' };
+}
+function saveState(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)); }catch(e){} }
+let S = loadState();
+function wordStat(id){
+  if(!S.words[id]) S.words[id] = { box:0, seen:0, correct:0 };
+  return S.words[id];
+}
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function bumpStreak(){
+  const t = todayStr();
+  if(S.lastDay === t) return;
+  const y = new Date(Date.now()-86400000).toISOString().slice(0,10);
+  S.streak = (S.lastDay === y) ? (S.streak||0)+1 : 1;
+  S.lastDay = t;
+  saveState();
+}
+
+/* ============ SPEECH ============ */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+function normalize(s){
+  return (s||'').toString().trim().toLowerCase()
+    .replace(/[֑-ׇ]/g,'')
+    .replace(/['".,!?\-]/g,'')
+    .replace(/\s+/g,' ').trim();
+}
+function levenshtein(a,b){
+  const m=a.length,n=b.length;
+  if(!m) return n; if(!n) return m;
+  const d=Array.from({length:m+1},(_,i)=>[i,...Array(n).fill(0)]);
+  for(let j=0;j<=n;j++) d[0][j]=j;
+  for(let i=1;i<=m;i++) for(let j=1;j<=n;j++){
+    d[i][j]=Math.min(d[i-1][j]+1, d[i][j-1]+1, d[i-1][j-1] + (a[i-1]===b[j-1]?0:1));
+  }
+  return d[m][n];
+}
+function isMatch(transcript, expectedArr){
+  const t = normalize(transcript);
+  if(!t) return false;
+  const tWords = t.split(' ');
+  return expectedArr.some(exp=>{
+    const e = normalize(exp);
+    if(!e) return false;
+    if(t===e) return true;
+    if(tWords.includes(e)) return true;
+    if(t.includes(e) && e.length>=3) return true;
+    const tol = e.length<=4 ? 1 : 2;
+    if(levenshtein(t,e) <= tol) return true;
+    return tWords.some(w=> w && Math.abs(w.length-e.length)<=2 && levenshtein(w,e)<=tol);
+  });
+}
+
+/* ============ APP / ROUTER ============ */
+const app = document.getElementById('app');
+let route = { name:'home' };
+let session = null; // active practice session
+
+function go(r){ route = r; render(); }
+
+function render(){
+  if(route.name==='home') return renderHome();
+  if(route.name==='practice') return renderPractice();
+  if(route.name==='result') return renderResult();
+}
+
+/* ---------- HOME ---------- */
+function catStats(cat){
+  let mastered=0;
+  cat.words.forEach(w=>{ if(wordStat(w.id).box>=3) mastered++; });
+  return { mastered, total: cat.words.length };
+}
+function renderHome(){
+  const examLine = examCountdownText();
+  app.innerHTML = `
+    <div class="topbar">
+      <div class="brand"><span class="brand-emoji">🌟</span><span class="brand-title">מילים לאיילה</span></div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        ${S.streak>0 ? `<div class="streak-pill">🔥 ${S.streak}</div>` : ''}
+        <button class="icon-btn" id="settingsBtn">⚙️</button>
+      </div>
+    </div>
+    ${examLine ? `<div class="exam-banner"><span>${examLine}</span><button id="editExam">שנה תאריך</button></div>` : `<div class="exam-banner" style="background:linear-gradient(135deg,#CDEAC0,#B7E4C7); color:#2C5B3F;"><span>רוצה לראות כמה ימים נשארו למבחן?</span><button id="editExam" style="color:#2C5B3F;">להוסיף תאריך</button></div>`}
+    <div class="section-title">בחרי קטגוריה לתרגול</div>
+    <div class="cat-grid" id="catGrid"></div>
+    <button class="test-card" id="testModeBtn">
+      <span class="t-emoji">🏁</span>
+      <span>
+        <div class="t-title">מצב מבחן</div>
+        <div class="t-sub">תרגול מהיר מכל הקטגוריות, בלי רמזים</div>
+      </span>
+    </button>
+  `;
+  const grid = document.getElementById('catGrid');
+  CATS.forEach(cat=>{
+    const st = catStats(cat);
+    const pct = Math.round((st.mastered/st.total)*100);
+    const card = document.createElement('button');
+    card.className='cat-card';
+    card.innerHTML = `
+      ${pct===100 ? `<div class="badge-mastered">הושלם! 🏆</div>` : ''}
+      <div class="cat-icon">${cat.icon}</div>
+      <div class="cat-name">${cat.name}</div>
+      <div class="bar"><i style="width:${pct}%; background:${cat.color};"></i></div>
+      <div class="cat-progress-text">${st.mastered}/${st.total} נשלטו</div>
+    `;
+    card.onclick = ()=> openCategory(cat.id);
+    grid.appendChild(card);
+  });
+  document.getElementById('settingsBtn').onclick = openSettings;
+  document.getElementById('editExam').onclick = openSettings;
+  document.getElementById('testModeBtn').onclick = ()=> startSession({ catId:'ALL', mode:'test' });
+}
+function examCountdownText(){
+  if(!S.examDate) return '';
+  const d = new Date(S.examDate+'T00:00:00');
+  const now = new Date(); now.setHours(0,0,0,0);
+  const days = Math.round((d-now)/86400000);
+  if(days<0) return 'המבחן היה — כל הכבוד על התרגול! 🎉';
+  if(days===0) return 'המבחן היום! את מוכנה! 💪';
+  if(days===1) return 'המבחן מחר! עוד תרגול קטן? 🌟';
+  return `עוד ${days} ימים למבחן — בואי נתרגל קצת! 📚`;
+}
+
+/* ---------- SETTINGS ---------- */
+function openSettings(){
+  const sheetHtml = `
+    <div class="overlay" id="ov">
+      <div class="sheet">
+        <h3>הגדרות</h3>
+        <div class="field-row">
+          <label>תאריך המבחן (לא חובה)</label>
+          <input type="date" id="examInput" value="${S.examDate||''}">
+        </div>
+        <button class="primary-btn" id="saveSettings">שמירה</button>
+        <button class="danger-btn" id="resetProgress" style="margin-top:12px;">איפוס כל ההתקדמות</button>
+        <button class="close-sheet" id="closeSettings">סגירה</button>
+      </div>
+    </div>`;
+  document.body.insertAdjacentHTML('beforeend', sheetHtml);
+  document.getElementById('saveSettings').onclick = ()=>{
+    S.examDate = document.getElementById('examInput').value || '';
+    saveState(); closeOverlay(); render();
+  };
+  document.getElementById('resetProgress').onclick = ()=>{
+    S = { words:{}, examDate:S.examDate, streak:0, lastDay:'' };
+    saveState(); closeOverlay(); render();
+  };
+  document.getElementById('closeSettings').onclick = closeOverlay;
+  document.getElementById('ov').addEventListener('click', (e)=>{ if(e.target.id==='ov') closeOverlay(); });
+}
+function closeOverlay(){ const ov=document.getElementById('ov'); if(ov) ov.remove(); }
+
+/* ---------- SESSION BUILD ---------- */
+function pickWeighted(words){
+  const weights = words.map(w=> 5 - Math.min(wordStat(w.id).box,4)); // lower box = higher weight
+  const total = weights.reduce((a,b)=>a+b,0);
+  let r = Math.random()*total;
+  for(let i=0;i<words.length;i++){ r -= weights[i]; if(r<=0) return words[i]; }
+  return words[words.length-1];
+}
+function buildQueue(catId, mode, count){
+  let pool = catId==='ALL' ? CATS.filter(c=>!c.isSounds).flatMap(c=>c.words) : CATS.find(c=>c.id===catId).words;
+  const n = Math.min(count, pool.length);
+  const chosen = []; const used = new Set();
+  let guard = 0;
+  while(chosen.length<n && guard<2000){
+    guard++;
+    const w = pickWeighted(pool);
+    if(!used.has(w.id)){ used.add(w.id); chosen.push(w); }
+  }
+  return chosen;
+}
+function openCategory(catId){
+  go({ name:'practice', catId, mode:'A' });
+}
+function startSession(opts){
+  const catId = opts.catId;
+  const mode = opts.mode; // 'A' | 'B' | 'test'
+  const count = mode==='test' ? 12 : (catId==='ALL' ? 12 : CATS.find(c=>c.id===catId).words.length);
+  const queue = buildQueue(catId, mode, count);
+  session = {
+    catId, mode, queue, idx:0, correct:0, missed:[], misses:0, revealed:false, lastResult:null
+  };
+  go({ name:'practice', catId, mode, active:true });
+}
+
+/* ---------- PRACTICE ---------- */
+function renderPractice(){
+  const catId = route.catId;
+  const isAll = catId==='ALL';
+  const cat = isAll ? null : CATS.find(c=>c.id===catId);
+
+  if(!session || session.catId!==catId){
+    // just entered category picker (not yet started) -> show mode tabs + start first word in mode A by default
+    startSession({ catId, mode: route.mode==='test' ? 'test' : 'A' });
+  }
+
+  const title = isAll ? 'מצב מבחן' : cat.name;
+  const w = session.queue[session.idx];
+  if(!w){ go({name:'result'}); return; }
+
+  const catOfWord = isAll ? CATS.find(c=>c.id===w.cat) : cat;
+  const direction = session.mode==='test' ? (Math.random()<0.5?'A':'B') : session.mode;
+  session.curDirection = session.curDirection && session.holdDirection===w.id ? session.curDirection : direction;
+  session.holdDirection = w.id;
+  const dir = session.curDirection;
+
+  const showEnglish = dir==='A';
+  const prompt = showEnglish ? catOfWord.promptA : catOfWord.promptB;
+  const expected = showEnglish ? w.he : [w.en];
+
+  app.innerHTML = `
+    <div class="practice-header">
+      <button class="back-btn" id="backBtn">→</button>
+      <div class="practice-title">${title}</div>
+    </div>
+    ${(session.mode!=='test' && !(cat && cat.isSounds)) ? `
+    <div class="mode-tabs">
+      <button class="mode-tab ${session.mode==='A'?'active':''}" data-mode="A">${cat.promptA==='כמה זה?'?'אנגלית → עברית':'אנגלית → עברית'}</button>
+      <button class="mode-tab ${session.mode==='B'?'active':''}" data-mode="B">עברית → אנגלית</button>
+    </div>` : ''}
+    <div class="progress-dots">${session.queue.map((_,i)=>`<i class="${i<session.idx?'done':''}"></i>`).join('')}</div>
+    <div class="card" id="card">
+      ${catOfWord.isSounds
+        ? `<div class="sound-badge">${w.en}</div><div class="sound-guide">אמרי: <b>${w.he[0]}</b></div>${w.hint?`<div class="sound-hint">${w.hint}</div>`:''}`
+        : catOfWord.isNumbers && showEnglish===false
+        ? `<div class="card-number">${w.he[0]}</div>`
+        : catOfWord.isNumbers && showEnglish
+          ? `<div class="card-word en">${w.en}</div>`
+          : showEnglish
+            ? `<div class="card-emoji">${w.emoji||'❓'}</div><div class="card-word en">${w.en}</div>`
+            : `<div class="card-emoji">${w.emoji||'❓'}</div><div class="card-word">${w.he[0]}</div>`
+      }
+      <div class="card-prompt">${prompt}</div>
+      <button class="mic-btn" id="micBtn">🎤</button>
+      <div class="mic-caption" id="micCaption">לחצי ודברי</div>
+      <div class="feedback" id="feedback"></div>
+      <div class="hint-row" id="hintRow"></div>
+    </div>
+  `;
+  document.getElementById('backBtn').onclick = ()=>{ session=null; go({name:'home'}); };
+  document.querySelectorAll('.mode-tab').forEach(btn=>{
+    btn.onclick = ()=> startSession({ catId, mode: btn.dataset.mode });
+  });
+
+  const micBtn = document.getElementById('micBtn');
+  const feedback = document.getElementById('feedback');
+  const caption = document.getElementById('micCaption');
+  const hintRow = document.getElementById('hintRow');
+  session.misses = 0;
+
+  if(!SR){
+    document.getElementById('card').insertAdjacentHTML('beforeend', `
+      <div class="fallback-box">המיקרופון לא זמין בדפדפן הזה. אפשר לבדוק את עצמך:</div>
+      <div class="self-check-row">
+        <button class="sc-yes" id="scYes">✅ ידעתי!</button>
+        <button class="sc-no" id="scNo">❌ עוד לא</button>
+      </div>`);
+    document.getElementById('scYes').onclick = ()=> handleResult(true, w, dir);
+    document.getElementById('scNo').onclick = ()=> handleResult(false, w, dir);
+    micBtn.style.display='none'; caption.style.display='none';
+    return;
+  }
+
+  micBtn.onclick = ()=>{
+    if(session.locked) return;
+    const rec = new SR();
+    rec.lang = showEnglish ? 'he-IL' : 'en-US';
+    rec.maxAlternatives = 3;
+    rec.interimResults = false;
+    micBtn.classList.add('listening');
+    caption.textContent = 'מקשיבה...';
+    feedback.textContent=''; feedback.className='feedback';
+    rec.onresult = (ev)=>{
+      const results = ev.results[0];
+      let ok=false;
+      for(let i=0;i<results.length;i++){ if(isMatch(results[i].transcript, expected)){ ok=true; break; } }
+      handleResult(ok, w, dir);
+    };
+    rec.onerror = ()=>{
+      micBtn.classList.remove('listening');
+      caption.textContent = 'לא הצלחתי לשמוע, נסי שוב 🙂';
+    };
+    rec.onend = ()=>{ micBtn.classList.remove('listening'); if(caption.textContent==='מקשיבה...') caption.textContent='לחצי ודברי'; };
+    try{ rec.start(); }catch(e){ caption.textContent='נסי שוב בעוד רגע'; }
+  };
+
+  function showHints(){
+    hintRow.innerHTML='';
+    const b1 = document.createElement('button'); b1.className='hint-btn'; b1.textContent='💡 רמז';
+    b1.onclick = ()=>{
+      const ans = expected[0];
+      feedback.className='feedback'; feedback.textContent = 'האות הראשונה: ' + ans[0];
+    };
+    const b2 = document.createElement('button'); b2.className='hint-btn self'; b2.textContent='👀 להראות את התשובה';
+    b2.onclick = ()=>{
+      feedback.className='feedback'; feedback.textContent = 'התשובה: ' + expected[0];
+    };
+    hintRow.appendChild(b1); hintRow.appendChild(b2);
+  }
+  if(!catOfWord.isSounds) showHints();
+}
+
+function playChime(good){
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const notes = good ? [523.25,659.25,783.99] : [392,349.23];
+    notes.forEach((f,i)=>{
+      const o=ctx.createOscillator(); const g=ctx.createGain();
+      o.type='sine'; o.frequency.value=f;
+      o.connect(g); g.connect(ctx.destination);
+      const t0 = ctx.currentTime + i*0.11;
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(0.18, t0+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0+0.22);
+      o.start(t0); o.stop(t0+0.24);
+    });
+  }catch(e){}
+}
+function burstEmoji(good){
+  const n = good ? 10 : 0;
+  for(let i=0;i<n;i++){
+    const el = document.createElement('div');
+    el.className='confetti';
+    el.textContent = ['🎉','⭐','✨','🌟','💫'][Math.floor(Math.random()*5)];
+    const x = window.innerWidth/2 + (Math.random()-0.5)*80;
+    const y = window.innerHeight*0.35;
+    el.style.left = x+'px'; el.style.top = y+'px';
+    el.style.transition = 'transform 0.9s ease-out, opacity 0.9s ease-out';
+    document.body.appendChild(el);
+    requestAnimationFrame(()=>{
+      const dx=(Math.random()-0.5)*220, dy = -140 - Math.random()*120;
+      el.style.transform = `translate(${dx}px, ${dy}px) rotate(${(Math.random()-0.5)*180}deg)`;
+      el.style.opacity='0';
+    });
+    setTimeout(()=> el.remove(), 950);
+  }
+}
+
+function handleResult(ok, w, dir){
+  session.locked = true;
+  const card = document.getElementById('card');
+  const feedback = document.getElementById('feedback');
+  const caption = document.getElementById('micCaption');
+  const stat = wordStat(w.id);
+  stat.seen++;
+  if(ok){
+    stat.box = Math.min(4, stat.box+1); stat.correct++;
+    card.classList.remove('bad-flash'); void card.offsetWidth; card.classList.add('good-flash');
+    feedback.className='feedback good'; feedback.textContent = PRAISE[Math.floor(Math.random()*PRAISE.length)];
+    caption.textContent='';
+    playChime(true); burstEmoji(true);
+    session.correct++;
+  } else {
+    session.misses++;
+    if(session.misses>=2){
+      stat.box = Math.max(0, stat.box-1);
+      card.classList.remove('good-flash'); void card.offsetWidth; card.classList.add('bad-flash');
+      feedback.className='feedback bad'; feedback.textContent = TRY_AGAIN[Math.floor(Math.random()*TRY_AGAIN.length)] + ' (התשובה: ' + (dir==='A'?w.he[0]:w.en) + ')';
+      caption.textContent='';
+      playChime(false);
+      if(!session.missed.find(m=>m.id===w.id)) session.missed.push(w);
+    } else {
+      card.classList.remove('good-flash'); void card.offsetWidth; card.classList.add('bad-flash');
+      feedback.className='feedback bad'; feedback.textContent = TRY_AGAIN[Math.floor(Math.random()*TRY_AGAIN.length)];
+      caption.textContent='';
+      session.locked=false;
+      saveState();
+      return; // let her try again on this same word
+    }
+  }
+  saveState();
+  bumpStreak();
+  setTimeout(()=>{
+    session.idx++;
+    session.locked=false;
+    render();
+  }, 1100);
+}
+
+/* ---------- RESULT ---------- */
+function renderResult(){
+  const total = session.queue.length;
+  const pct = Math.round((session.correct/total)*100);
+  const emoji = pct>=90 ? '🏆' : pct>=70 ? '🌟' : pct>=50 ? '💪' : '🌱';
+  app.innerHTML = `
+    <div class="practice-header">
+      <button class="back-btn" id="backBtn">→</button>
+      <div class="practice-title">סיכום</div>
+    </div>
+    <div class="result-card">
+      <div class="result-emoji">${emoji}</div>
+      <div class="result-score">${session.correct}/${total}</div>
+      <div class="result-sub">תשובות נכונות</div>
+      ${session.missed.length ? `
+        <div class="section-title" style="text-align:start;">מילים לתרגל שוב</div>
+        <div class="missed-list">${session.missed.map(m=>`<div class="missed-item"><span class="en">${m.en}</span><span>${m.he[0]}</span></div>`).join('')}</div>
+      ` : `<div style="font-weight:700; color:var(--good); margin-bottom:10px;">כל הכבוד, הכל נכון! 🎉</div>`}
+      <button class="primary-btn" id="againBtn">לתרגל שוב</button>
+      <button class="secondary-btn" id="homeBtn">חזרה לדף הבית</button>
+    </div>
+  `;
+  document.getElementById('backBtn').onclick = ()=>{ session=null; go({name:'home'}); };
+  document.getElementById('homeBtn').onclick = ()=>{ session=null; go({name:'home'}); };
+  document.getElementById('againBtn').onclick = ()=>{
+    const catId = session.catId, mode = session.mode;
+    session=null;
+    startSession({ catId, mode });
+  };
+}
+
+render();
+</script>
+</body>
+</html>
