@@ -169,6 +169,28 @@
   .progress-dots i{ width:7px;height:7px;border-radius:50%; background: var(--border); display:block; }
   .progress-dots i.done{ background: var(--accent); }
 
+  /* ---------- celebration zone ---------- */
+  .celebrate-zone{
+    margin-top: 22px; padding: 26px 18px 22px; border-radius: 26px;
+    background: linear-gradient(135deg, #FFE29A, #FFB199);
+    box-shadow: var(--shadow-lg);
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    animation: celebrate-in .4s cubic-bezier(.34,1.56,.64,1);
+    position: relative; overflow: hidden;
+  }
+  @keyframes celebrate-in{ 0%{ transform: scale(.6) translateY(20px); opacity:0; } 100%{ transform: scale(1) translateY(0); opacity:1; } }
+  .celebrate-dancers{ display:flex; gap:14px; font-size: 52px; line-height:1; }
+  .celebrate-dancers span{ display:inline-block; animation: dance-move .5s ease-in-out infinite alternate; }
+  .celebrate-dancers span:nth-child(2){ animation-delay:.18s; }
+  .celebrate-dancers span:nth-child(3){ animation-delay:.34s; }
+  @keyframes dance-move{
+    0%{ transform: translateY(0) rotate(-10deg); }
+    100%{ transform: translateY(-16px) rotate(12deg); }
+  }
+  .celebrate-text{ font-weight:800; font-size:18px; color:#5A3A2A; text-align:center; text-wrap:balance; }
+  .celebrate-spark{ position:absolute; font-size:20px; animation: spark-float 1.8s ease-in infinite; opacity:.9; }
+  @keyframes spark-float{ 0%{ transform: translateY(10px) rotate(0deg); opacity:0; } 15%{opacity:1;} 100%{ transform: translateY(-70px) rotate(50deg); opacity:0; } }
+
   /* ---------- result screen ---------- */
   .result-card{
     background: var(--bg-card); border-radius: 28px; padding: 34px 24px; text-align:center;
@@ -351,6 +373,39 @@ const WORD_BY_ID = {}; CATS.forEach(c=>c.words.forEach(w=>WORD_BY_ID[w.id]=w));
 
 const PRAISE = ['מעולה! 🎉','כל הכבוד! ⭐','וואו, נכון! 🥳','יופי! 💪','את אלופה! 🏆','מדהים! ✨','בדיוק! 🙌'];
 const TRY_AGAIN = ['כמעט! נסי שוב 💛','לא נורא, ננסה שוב 🙂','עוד ניסיון! את יכולה 💪','קרוב! בואי ננסה עוד פעם'];
+const CELEBRATE_DANCERS = ['💃','🕺','🐻','🐰','🦄','🐥','🦋','🐸','🦁','🐼','🐨','🦋'];
+const CELEBRATE_LINES = [
+  'מי אלופה? איילה אלופה! 🏆',
+  'את מדהימה!',
+  'וואו, איזו כישרונית!',
+  'ישששש! את על אש! 🔥',
+  'תותחית אמיתית!',
+  'איילה שוברת שיאים! ⭐',
+  'כל הכבוד, ממשיכה ככה!',
+  'איזה ראש מבריק יש לך!',
+  'שלוש נכונות ברצף — וואו!',
+  'את פשוט גאונה!',
+];
+function showCelebration(anchorEl){
+  const d1 = CELEBRATE_DANCERS[Math.floor(Math.random()*CELEBRATE_DANCERS.length)];
+  let d2 = CELEBRATE_DANCERS[Math.floor(Math.random()*CELEBRATE_DANCERS.length)];
+  let d3 = CELEBRATE_DANCERS[Math.floor(Math.random()*CELEBRATE_DANCERS.length)];
+  const line = CELEBRATE_LINES[Math.floor(Math.random()*CELEBRATE_LINES.length)];
+  const sparks = ['✨','🎉','⭐','💫'];
+  let sparkHtml = '';
+  for(let i=0;i<5;i++){
+    const left = 6 + Math.random()*88;
+    const delay = (Math.random()*1.6).toFixed(2);
+    sparkHtml += `<span class="celebrate-spark" style="left:${left}%; bottom:0; animation-delay:${delay}s;">${sparks[Math.floor(Math.random()*sparks.length)]}</span>`;
+  }
+  const html = `
+    <div class="celebrate-zone" id="celebrateZone">
+      ${sparkHtml}
+      <div class="celebrate-dancers"><span>${d1}</span><span>${d2}</span><span>${d3}</span></div>
+      <div class="celebrate-text">${line}</div>
+    </div>`;
+  if(anchorEl) anchorEl.insertAdjacentHTML('afterend', html);
+}
 
 /* ============ STATE ============ */
 const STORE_KEY = 'ayalaEnglish.v1';
@@ -545,7 +600,7 @@ function startSession(opts){
   const count = mode==='test' ? 12 : (catId==='ALL' ? 12 : CATS.find(c=>c.id===catId).words.length);
   const queue = buildQueue(catId, mode, count);
   session = {
-    catId, mode, queue, idx:0, correct:0, missed:[], misses:0, revealed:false, lastResult:null
+    catId, mode, queue, idx:0, correct:0, missed:[], misses:0, revealed:false, lastResult:null, comboCount:0
   };
   go({ name:'practice', catId, mode, active:true });
 }
@@ -796,6 +851,7 @@ function handleResult(ok, w, dir){
   const caption = document.getElementById('micCaption');
   const stat = wordStat(w.id);
   stat.seen++;
+  let celebrate = false;
   if(ok){
     stat.box = Math.min(4, stat.box+1); stat.correct++;
     card.classList.remove('bad-flash'); void card.offsetWidth; card.classList.add('good-flash');
@@ -803,6 +859,11 @@ function handleResult(ok, w, dir){
     caption.textContent='';
     playChime(true); burstEmoji(true);
     session.correct++;
+    session.comboCount = (session.comboCount||0) + 1;
+    if(session.comboCount>0 && session.comboCount%3===0){
+      celebrate = true;
+      showCelebration(card);
+    }
   } else {
     session.misses++;
     const heardNote = session.lastHeard ? (' (שמעתי: "' + session.lastHeard + '")') : ' (לא שמעתי כלום)';
@@ -812,6 +873,7 @@ function handleResult(ok, w, dir){
       feedback.className='feedback bad'; feedback.textContent = TRY_AGAIN[Math.floor(Math.random()*TRY_AGAIN.length)] + ' (התשובה: ' + (dir==='A'?w.he[0]:w.en) + ')';
       caption.textContent = heardNote;
       playChime(false);
+      session.comboCount = 0;
       if(!session.missed.find(m=>m.id===w.id)) session.missed.push(w);
     } else {
       card.classList.remove('good-flash'); void card.offsetWidth; card.classList.add('bad-flash');
@@ -828,7 +890,7 @@ function handleResult(ok, w, dir){
     session.idx++;
     session.locked=false;
     render();
-  }, 1100);
+  }, celebrate ? 2300 : 1100);
 }
 
 /* ---------- RESULT ---------- */
