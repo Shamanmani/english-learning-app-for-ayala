@@ -493,6 +493,7 @@ function openSettings(){
           <input type="date" id="examInput" value="${S.examDate||''}">
         </div>
         <button class="primary-btn" id="saveSettings">שמירה</button>
+        ${S.heDictationBroken ? `<button class="secondary-btn" id="retryHeMic" style="margin-top:12px;">🎤 לנסות שוב זיהוי דיבור בעברית במכשיר זה</button>` : ''}
         <button class="danger-btn" id="resetProgress" style="margin-top:12px;">איפוס כל ההתקדמות</button>
         <button class="close-sheet" id="closeSettings">סגירה</button>
       </div>
@@ -505,6 +506,10 @@ function openSettings(){
   document.getElementById('resetProgress').onclick = ()=>{
     S = { words:{}, examDate:S.examDate, streak:0, lastDay:'' };
     saveState(); closeOverlay(); render();
+  };
+  const retryHeMicBtn = document.getElementById('retryHeMic');
+  if(retryHeMicBtn) retryHeMicBtn.onclick = ()=>{
+    S.heDictationBroken = false; saveState(); closeOverlay(); render();
   };
   document.getElementById('closeSettings').onclick = closeOverlay;
   document.getElementById('ov').addEventListener('click', (e)=>{ if(e.target.id==='ov') closeOverlay(); });
@@ -624,6 +629,21 @@ function renderPractice(){
     return;
   }
 
+  if(showEnglish && S.heDictationBroken){
+    document.getElementById('card').insertAdjacentHTML('beforeend', `
+      <div class="fallback-box">זיהוי דיבור בעברית לא עבד במכשיר הזה בפעם הקודמת, אז עברנו לבדיקה עצמית:</div>
+      <div class="self-check-row">
+        <button class="sc-yes" id="scYes">✅ ידעתי!</button>
+        <button class="sc-no" id="scNo">❌ עוד לא</button>
+      </div>
+      <button class="hint-btn self" id="retryMicLink" style="margin-top:10px; display:block; margin-inline:auto;">🎤 לנסות שוב עם המיקרופון</button>`);
+    document.getElementById('scYes').onclick = ()=> handleResult(true, w, dir);
+    document.getElementById('scNo').onclick = ()=> handleResult(false, w, dir);
+    document.getElementById('retryMicLink').onclick = ()=>{ S.heDictationBroken=false; saveState(); render(); };
+    micBtn.style.display='none'; caption.style.display='none';
+    return;
+  }
+
   const ERR_MSG = {
     'no-speech': 'לא שמעתי כלום — נסי לדבר קצת יותר חזק וקרוב למכשיר',
     'not-allowed': 'אין הרשאת מיקרופון — צריך לאשר גישה למיקרופון בהגדרות הדפדפן לאתר הזה',
@@ -662,10 +682,14 @@ function renderPractice(){
     if(!isRetry){ feedback.textContent=''; feedback.className='feedback'; }
     let done=false;
     const canAutoRetry = !isRetry && showEnglish; // only Hebrew-answer direction: he-IL is sometimes unsupported, iw-IL is the legacy code for Hebrew
+    function markHeBrokenIfNeeded(){
+      if(isRetry && showEnglish){ S.heDictationBroken = true; saveState(); }
+    }
     const watchdog = setTimeout(()=>{
       if(done) return; done=true;
       try{ rec.stop(); }catch(e){}
       if(canAutoRetry){ startRecognition('iw-IL', true); return; }
+      markHeBrokenIfNeeded();
       micBtn.classList.remove('listening');
       caption.textContent = 'לא הצלחתי לשמוע, נסי שוב 🙂 [timeout]';
       session.micFailCount += 2;
@@ -684,6 +708,7 @@ function renderPractice(){
       if(done) return; done=true; clearTimeout(watchdog);
       const code = ev && ev.error;
       if(canAutoRetry && (code==='language-not-supported' || code==='no-speech')){ startRecognition('iw-IL', true); return; }
+      markHeBrokenIfNeeded();
       micBtn.classList.remove('listening');
       caption.textContent = (ERR_MSG[code] || 'שגיאה בזיהוי דיבור') + '  [' + (code||'?') + ']';
       session.micFailCount += 1;
@@ -696,6 +721,7 @@ function renderPractice(){
     };
     try{ rec.start(); }catch(e){
       if(canAutoRetry){ startRecognition('iw-IL', true); return; }
+      markHeBrokenIfNeeded();
       micBtn.classList.remove('listening');
       caption.textContent='נסי שוב בעוד רגע'; offerSelfCheckFallback();
     }
