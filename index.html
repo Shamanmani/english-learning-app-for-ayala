@@ -609,6 +609,7 @@ function renderPractice(){
   const caption = document.getElementById('micCaption');
   const hintRow = document.getElementById('hintRow');
   session.misses = 0;
+  session.lastHeard = '';
 
   if(!SR){
     document.getElementById('card').insertAdjacentHTML('beforeend', `
@@ -623,6 +624,15 @@ function renderPractice(){
     return;
   }
 
+  const ERR_MSG = {
+    'no-speech': 'לא שמעתי כלום — נסי לדבר קצת יותר חזק וקרוב למכשיר',
+    'not-allowed': 'אין הרשאת מיקרופון — צריך לאשר גישה למיקרופון בהגדרות הדפדפן לאתר הזה',
+    'audio-capture': 'לא נמצא מיקרופון פעיל במכשיר',
+    'network': 'בעיית רשת — זיהוי דיבור צריך חיבור לאינטרנט',
+    'language-not-supported': 'השפה הזו לא נתמכת בזיהוי דיבור במכשיר הזה',
+    'aborted': 'ההקשבה נעצרה',
+    'service-not-allowed': 'שירות זיהוי הדיבור חסום במכשיר הזה',
+  };
   micBtn.onclick = ()=>{
     if(session.locked) return;
     const rec = new SR();
@@ -632,17 +642,32 @@ function renderPractice(){
     micBtn.classList.add('listening');
     caption.textContent = 'מקשיבה...';
     feedback.textContent=''; feedback.className='feedback';
+    let done=false;
+    const watchdog = setTimeout(()=>{
+      if(done) return; done=true;
+      try{ rec.stop(); }catch(e){}
+      micBtn.classList.remove('listening');
+      caption.textContent = 'לא הצלחתי לשמוע, נסי שוב 🙂 [timeout]';
+    }, 8000);
     rec.onresult = (ev)=>{
+      if(done) return; done=true; clearTimeout(watchdog);
       const results = ev.results[0];
-      let ok=false;
-      for(let i=0;i<results.length;i++){ if(isMatch(results[i].transcript, expected)){ ok=true; break; } }
+      let ok=false; const heard=[];
+      for(let i=0;i<results.length;i++){ heard.push(results[i].transcript); if(isMatch(results[i].transcript, expected)){ ok=true; break; } }
+      session.lastHeard = heard[0] || '';
       handleResult(ok, w, dir);
     };
-    rec.onerror = ()=>{
+    rec.onerror = (ev)=>{
+      if(done) return; done=true; clearTimeout(watchdog);
       micBtn.classList.remove('listening');
-      caption.textContent = 'לא הצלחתי לשמוע, נסי שוב 🙂';
+      const code = ev && ev.error;
+      caption.textContent = (ERR_MSG[code] || 'שגיאה בזיהוי דיבור') + '  [' + (code||'?') + ']';
     };
-    rec.onend = ()=>{ micBtn.classList.remove('listening'); if(caption.textContent==='מקשיבה...') caption.textContent='לחצי ודברי'; };
+    rec.onend = ()=>{
+      clearTimeout(watchdog);
+      micBtn.classList.remove('listening');
+      if(caption.textContent==='מקשיבה...') caption.textContent='לחצי ודברי';
+    };
     try{ rec.start(); }catch(e){ caption.textContent='נסי שוב בעוד רגע'; }
   };
 
@@ -714,17 +739,18 @@ function handleResult(ok, w, dir){
     session.correct++;
   } else {
     session.misses++;
+    const heardNote = session.lastHeard ? (' (שמעתי: "' + session.lastHeard + '")') : ' (לא שמעתי כלום)';
     if(session.misses>=2){
       stat.box = Math.max(0, stat.box-1);
       card.classList.remove('good-flash'); void card.offsetWidth; card.classList.add('bad-flash');
       feedback.className='feedback bad'; feedback.textContent = TRY_AGAIN[Math.floor(Math.random()*TRY_AGAIN.length)] + ' (התשובה: ' + (dir==='A'?w.he[0]:w.en) + ')';
-      caption.textContent='';
+      caption.textContent = heardNote;
       playChime(false);
       if(!session.missed.find(m=>m.id===w.id)) session.missed.push(w);
     } else {
       card.classList.remove('good-flash'); void card.offsetWidth; card.classList.add('bad-flash');
       feedback.className='feedback bad'; feedback.textContent = TRY_AGAIN[Math.floor(Math.random()*TRY_AGAIN.length)];
-      caption.textContent='';
+      caption.textContent = heardNote;
       session.locked=false;
       saveState();
       return; // let her try again on this same word
